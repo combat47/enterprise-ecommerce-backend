@@ -1,5 +1,7 @@
 package com.combat47.ecommerce.identity.domain.model;
 
+import com.combat47.ecommerce.identity.domain.exception.InvalidEmailException;
+
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -10,13 +12,13 @@ public record Email(String value) {
 
     public Email {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Email cannot be null or empty");
+            throw new InvalidEmailException("Email cannot be null or empty");
         }
 
         value = normalize(value);
 
         if (!EMAIL_PATTERN.matcher(value).matches()) {
-            throw new IllegalArgumentException("Invalid Email format");
+            throw new InvalidEmailException("Invalid Email format");
         }
     }
 

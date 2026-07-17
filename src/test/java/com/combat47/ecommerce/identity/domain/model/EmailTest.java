@@ -1,5 +1,6 @@
 package com.combat47.ecommerce.identity.domain.model;
 
+import com.combat47.ecommerce.identity.domain.exception.InvalidEmailException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,7 +21,7 @@ class EmailTest {
     @Test
     void should_reject_empty_email() {
         assertThrows(
-                IllegalArgumentException.class,
+                InvalidEmailException.class,
                 () -> new Email("")
         );
     }
@@ -29,7 +30,7 @@ class EmailTest {
     @Test
     void should_reject_invalid_email() {
         assertThrows(
-                IllegalArgumentException.class,
+                InvalidEmailException.class,
                 () -> new Email("invalid-email")
         );
     }
