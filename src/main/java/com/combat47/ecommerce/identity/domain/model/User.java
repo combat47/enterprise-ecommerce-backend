@@ -1,9 +1,12 @@
 package com.combat47.ecommerce.identity.domain.model;
 
 import com.combat47.ecommerce.identity.domain.exception.InvalidEmailException;
-import com.combat47.ecommerce.identity.domain.exception.InvalidUserStateException;
+import com.combat47.ecommerce.identity.domain.exception.InvalidRoleException;
+import com.combat47.ecommerce.identity.domain.exception.InvalidRoleOperationException;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public final class User {
@@ -18,20 +21,22 @@ public final class User {
 
     private LastName lastName;
 
-    private UserStatus userStatus;
+    private final Set<Role> roles;
 
     private final Instant createdAt;
 
     private Instant updatedAt;
 
 
-    private User(UUID id, Email email, PasswordHash passwordHash, FirstName firstName, LastName lastName, UserStatus userStatus, Instant createdAt, Instant updatedAt) {
+
+    private User(UUID id, Email email, PasswordHash passwordHash, FirstName firstName,
+                 LastName lastName,  Set<Role> roles, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.email = email;
         this.passwordHash = passwordHash;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.userStatus = userStatus;
+        this.roles = new HashSet<>(roles);
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -39,32 +44,41 @@ public final class User {
     public static User register(Email email, PasswordHash passwordHash, FirstName firstName,
                                 LastName lastName) {
         UUID id = UUID.randomUUID();
-        UserStatus status = UserStatus.PENDING_VERIFICATION;
         Instant now = Instant.now();
-        return new User(id, email, passwordHash, firstName, lastName, status, now, now);
+        Set<Role> defaultRoles = Set.of(Role.CUSTOMER);
+        return new User(id, email, passwordHash, firstName, lastName, defaultRoles, now, now);
     }
 
-    public void activate() {
-        if (this.userStatus != UserStatus.PENDING_VERIFICATION) {
-            throw new InvalidUserStateException(
-                    "User can only be activated from PENDING_VERIFICATION status. Current status: " +
-                            this.userStatus
-            );
+    public void assignRole(Role role) {
+        if (role == null) {
+            throw new InvalidRoleException("Role cannot be null");
         }
-        this.userStatus = UserStatus.ACTIVE;
+
+        if (roles.contains(role)) {
+            return;
+        }
+        roles.add(role);
         this.updatedAt = Instant.now();
     }
 
-    public void deactivate() {
-        if (userStatus != UserStatus.ACTIVE) {
-            throw new InvalidUserStateException(
-                    "User can only be deactivated from ACTIVE status. Current status: " +
-                            this.userStatus
+    public void removeRole(Role role) {
+        if (role == null) {
+            throw new InvalidRoleException("Role cannot be null");
+        } else if (!roles.contains(role)) {
+            return;
+        } else if (roles.size() == 1) {
+            throw new InvalidRoleOperationException(
+                    "User must have at least one role. cannot remove the last role: " + role
             );
         }
-        this.userStatus = UserStatus.INACTIVE;
+        roles.remove(role);
         this.updatedAt = Instant.now();
     }
+
+    public boolean hasRole(Role role) {
+        return roles.contains(role);
+    }
+
 
     public void changeEmail(Email newEmail) {
         if (newEmail == null) {
@@ -99,8 +113,8 @@ public final class User {
         return lastName;
     }
 
-    public UserStatus getUserStatus() {
-        return userStatus;
+    public Set<Role> getRoles() {
+        return new HashSet<>(roles);
     }
 
     public Instant getCreatedAt() {
