@@ -1,7 +1,8 @@
 package com.combat47.ecommerce.identity.application.port.in;
 
 import com.combat47.ecommerce.identity.application.command.RegisterUserCommand;
+import com.combat47.ecommerce.identity.domain.model.User;
 
 public interface RegisterUserUseCase {
-    void execute(RegisterUserCommand command);
+    User execute(RegisterUserCommand command);
 }

@@ -18,17 +18,19 @@ public class RegisterUserService implements RegisterUserUseCase {
     }
 
     @Override
-    public void execute(RegisterUserCommand command) {
+    public User execute(RegisterUserCommand command) {
         Email email = new Email(command.email());
-        FirstName firstName = new FirstName(command.firstname());
-        LastName lastName = new LastName(command.lastname());
         if (userRepository.existsByEmail(email)) {
             throw new DuplicateEmailException("Email already exists: " + email.value());
         }
+        FirstName firstName = new FirstName(command.firstname());
+        LastName lastName = new LastName(command.lastname());
+
         PasswordHash passwordHash = passwordHasher.hash(command.password());
 
         User user = User.register(email, passwordHash, firstName, lastName);
 
         userRepository.save(user);
+        return user;
     }
 }
