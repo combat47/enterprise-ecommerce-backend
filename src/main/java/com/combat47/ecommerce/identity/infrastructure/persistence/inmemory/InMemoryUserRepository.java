@@ -6,6 +6,7 @@ import com.combat47.ecommerce.identity.domain.model.User;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class InMemoryUserRepository implements UserRepository {
@@ -22,5 +23,14 @@ public class InMemoryUserRepository implements UserRepository {
     public User save(User user) {
         users.put(user.getId(), user);
         return user;
+    }
+
+    @Override
+    public Optional<User> findByEmail(Email email) {
+
+        return users.values()
+                .stream()
+                .filter(user -> user.getEmail().equals(email))
+                .findFirst();
     }
 }

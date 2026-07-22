@@ -93,6 +93,28 @@ public final class User {
         this.updatedAt = Instant.now();
     }
 
+    public static User restore(
+                               UUID id,
+                               Email email,
+                               PasswordHash passwordHash,
+                               FirstName firstName,
+                               LastName lastName,
+                               Set<Role> roles,
+                               Instant createdAt,
+                               Instant updatedAt
+    ) {
+        return new User(
+                id,
+                email,
+                passwordHash,
+                firstName,
+                lastName,
+                roles,
+                createdAt,
+                updatedAt
+        );
+    }
+
     public UUID getId() {
         return id;
     }
