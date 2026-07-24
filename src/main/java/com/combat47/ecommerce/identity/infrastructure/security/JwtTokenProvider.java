@@ -93,4 +93,18 @@ public class JwtTokenProvider implements TokenProvider {
 
         return generateToken(user);
     }
+
+    @Override
+    public UUID extractUserId(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return UUID.fromString(claims.getSubject());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid token", e);
+        }
+    }
 }
