@@ -26,7 +26,7 @@ public class RegisterUserService implements RegisterUserUseCase {
         FirstName firstName = new FirstName(command.firstname());
         LastName lastName = new LastName(command.lastname());
 
-        PasswordHash passwordHash = passwordHasher.hash(command.password());
+        PasswordHash passwordHash = new PasswordHash(passwordHasher.hash(command.password()));
 
         User user = User.register(email, passwordHash, firstName, lastName);
 

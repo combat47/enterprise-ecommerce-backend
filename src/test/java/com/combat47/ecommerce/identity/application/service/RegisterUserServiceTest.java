@@ -50,7 +50,7 @@ class RegisterUserServiceTest {
                 .thenReturn(false);
 
         when(passwordHasher.hash(anyString()))
-                .thenReturn(new PasswordHash("hashed-password"));
+                .thenReturn("hashed-password");
 
         registerUserService.execute(command);
 

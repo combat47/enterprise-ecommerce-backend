@@ -5,7 +5,7 @@ import com.combat47.ecommerce.identity.domain.model.PasswordHash;
 
 public class FakePasswordHasher implements PasswordHasher {
     @Override
-    public PasswordHash hash(String rayPassword) {
-        return new PasswordHash("hashed-" + rayPassword);
+    public String hash(String rayPassword) {
+        return "hashed-" + rayPassword;
     }
 }
