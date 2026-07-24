@@ -1,9 +1,12 @@
 package com.combat47.ecommerce.identity.infrastructure.config;
 
 
+import com.combat47.ecommerce.identity.application.port.in.LoginUseCase;
 import com.combat47.ecommerce.identity.application.port.in.RegisterUserUseCase;
 import com.combat47.ecommerce.identity.application.port.out.PasswordHasher;
+import com.combat47.ecommerce.identity.application.port.out.TokenProvider;
 import com.combat47.ecommerce.identity.application.port.out.UserRepository;
+import com.combat47.ecommerce.identity.application.service.LoginService;
 import com.combat47.ecommerce.identity.application.service.RegisterUserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,5 +22,14 @@ public class IdentityConfiguration {
             PasswordHasher passwordHasher) {
 
         return new RegisterUserService(userRepository, passwordHasher);
+    }
+
+    @Bean
+    public LoginUseCase loginUseCase(
+            UserRepository userRepository,
+            PasswordHasher passwordHasher,
+            TokenProvider tokenProvider
+    ) {
+        return new LoginService(userRepository, passwordHasher, tokenProvider);
     }
 }
