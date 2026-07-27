@@ -13,6 +13,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -103,6 +104,21 @@ public class JwtTokenProvider implements TokenProvider {
                     .parseSignedClaims(token)
                     .getPayload();
             return UUID.fromString(claims.getSubject());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid token", e);
+        }
+    }
+
+    @Override
+    public List<String> extractRoles(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return claims.get("roles", List.class);
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid token", e);
         }
