@@ -17,4 +17,6 @@ public interface TokenProvider {
     UUID extractUserId(String token);
 
     List<String> extractRoles(String token);
+
+    String extractEmail(String token);
 }

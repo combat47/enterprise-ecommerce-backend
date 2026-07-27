@@ -123,4 +123,18 @@ public class JwtTokenProvider implements TokenProvider {
             throw new IllegalArgumentException("Invalid token", e);
         }
     }
+
+    @Override
+    public String extractEmail(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return claims.get("email", String.class);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid token", e);
+        }
+    }
 }
