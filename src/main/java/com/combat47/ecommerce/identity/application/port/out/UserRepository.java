@@ -4,6 +4,7 @@ import com.combat47.ecommerce.identity.domain.model.Email;
 import com.combat47.ecommerce.identity.domain.model.User;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface UserRepository {
 
@@ -12,4 +13,6 @@ public interface UserRepository {
     User save(User user);
 
     Optional<User> findByEmail(Email email);
+
+    Optional<User> findById(UUID id);
 }

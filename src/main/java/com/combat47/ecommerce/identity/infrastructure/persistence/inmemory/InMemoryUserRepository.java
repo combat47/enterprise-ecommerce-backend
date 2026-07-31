@@ -33,4 +33,9 @@ public class InMemoryUserRepository implements UserRepository {
                 .filter(user -> user.getEmail().equals(email))
                 .findFirst();
     }
+
+    @Override
+    public Optional<User> findById(UUID id) {
+        return Optional.ofNullable(users.get(id));
+    }
 }

@@ -9,6 +9,7 @@ import com.combat47.ecommerce.identity.infrastructure.persistence.repository.Jpa
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Repository
@@ -43,5 +44,10 @@ public class JpaUserRepositoryAdapter implements UserRepository {
     public Optional<User> findByEmail(Email email) {
 
         return jpaUserRepository.findByEmail(email.value()).map(userEntityMapper::toDomain);
+    }
+
+    @Override
+    public Optional<User> findById(UUID id) {
+        return jpaUserRepository.findById(id).map(userEntityMapper::toDomain);
     }
 }
