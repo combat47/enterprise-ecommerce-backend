@@ -1,6 +1,8 @@
 package com.combat47.ecommerce.identity.application.service;
 
+import com.combat47.ecommerce.identity.application.command.RefreshTokenCommand;
 import com.combat47.ecommerce.identity.application.model.TokenResponse;
+import com.combat47.ecommerce.identity.application.port.in.RefreshTokenUseCase;
 import com.combat47.ecommerce.identity.application.port.out.RefreshTokenRepository;
 import com.combat47.ecommerce.identity.application.port.out.TokenProvider;
 import com.combat47.ecommerce.identity.application.port.out.UserRepository;
@@ -13,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 
 @Service
-public class RefreshTokenService {
+public class RefreshTokenService implements RefreshTokenUseCase {
 
     private static final long REFRESH_TOKEN_EXPIRY_SECONDS = 30 * 24 * 60 * 60;
 
@@ -29,11 +31,14 @@ public class RefreshTokenService {
         this.userRepository = userRepository;
     }
 
+
+    @Override
     @Transactional
-    public TokenResponse refreshTokens(String refreshTokenString) {
+    public TokenResponse refreshToken(RefreshTokenCommand command) {
+        String refreshTokenString = command.refreshToken();
+
         RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenString)
                 .orElseThrow(() -> new InvalidRefreshTokenException("Invalid refresh token"));
-
         if (!refreshToken.isValid()) {
             throw new InvalidRefreshTokenException("Refresh token is expired or revoked");
         }
@@ -41,7 +46,8 @@ public class RefreshTokenService {
         User user = userRepository.findById(refreshToken.getUserId())
                 .orElseThrow(() -> new InvalidRefreshTokenException("User not found"));
 
-        refreshTokenRepository.revokeAllForUser(user.getId());
+        refreshToken.revoke();
+        refreshTokenRepository.save(refreshToken);
 
         TokenResponse tokenResponse = tokenProvider.generateToken(user);
 
@@ -51,7 +57,6 @@ public class RefreshTokenService {
                 Instant.now().plusSeconds(REFRESH_TOKEN_EXPIRY_SECONDS)
         );
         refreshTokenRepository.save(newRefreshToken);
-
         return tokenResponse;
     }
 }

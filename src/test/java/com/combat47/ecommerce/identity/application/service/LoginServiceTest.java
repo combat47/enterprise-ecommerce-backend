@@ -4,6 +4,7 @@ package com.combat47.ecommerce.identity.application.service;
 import com.combat47.ecommerce.identity.application.command.LoginCommand;
 import com.combat47.ecommerce.identity.application.model.TokenResponse;
 import com.combat47.ecommerce.identity.application.port.out.PasswordHasher;
+import com.combat47.ecommerce.identity.application.port.out.RefreshTokenRepository;
 import com.combat47.ecommerce.identity.application.port.out.TokenProvider;
 import com.combat47.ecommerce.identity.application.port.out.UserRepository;
 import com.combat47.ecommerce.identity.domain.exception.InvalidCredentialsException;
@@ -33,6 +34,9 @@ class LoginServiceTest {
     @Mock
     private TokenProvider tokenProvider;
 
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+
     @InjectMocks
     private LoginService loginService;
 
@@ -59,6 +63,11 @@ class LoginServiceTest {
         when(passwordHasher.matches(anyString(), anyString()))
                 .thenReturn(true);
 
+        doNothing().when(refreshTokenRepository).revokeAllForUser(any());
+
+        when(refreshTokenRepository.save(any()))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
         TokenResponse tokenResponse = new TokenResponse(
                 "access-token",
                 "refresh-token",
@@ -78,6 +87,8 @@ class LoginServiceTest {
         verify(userRepository, times(1)).findByEmail(any(Email.class));
         verify(passwordHasher, times(1)).matches(anyString(), anyString());
         verify(tokenProvider, times(1)).generateToken(any(User.class));
+        verify(refreshTokenRepository, times(1)).revokeAllForUser(any());
+        verify(refreshTokenRepository, times(1)).save(any());
 
     }
 
@@ -97,6 +108,8 @@ class LoginServiceTest {
 
         verify(passwordHasher, never()).matches(anyString(), anyString());
         verify(tokenProvider, never()).generateToken(any(User.class));
+        verify(refreshTokenRepository, never()).revokeAllForUser(any());
+        verify(refreshTokenRepository, never()).save(any());
     }
 
 
@@ -127,6 +140,8 @@ class LoginServiceTest {
 
         verify(passwordHasher, times(1)).matches(anyString(), anyString());
         verify(tokenProvider, never()).generateToken(any(User.class));
+        verify(refreshTokenRepository, never()).revokeAllForUser(any());
+        verify(refreshTokenRepository, never()).save(any());
 
     }
 
