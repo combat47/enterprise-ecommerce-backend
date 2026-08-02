@@ -51,7 +51,7 @@ class RefreshTokenIntegrationTest {
     void should_refresh_successfully() throws InterruptedException {
         RefreshTokenCommand command = new RefreshTokenCommand(refreshToken);
 
-        Thread.sleep(200);
+        Thread.sleep(1000);
 
         TokenResponse response = refreshTokenUseCase.refreshToken(command);
 
