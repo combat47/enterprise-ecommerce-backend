@@ -6,6 +6,7 @@ import com.combat47.ecommerce.catalog.domain.model.Product;
 import com.combat47.ecommerce.catalog.domain.model.Sku;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,6 +36,13 @@ public class InMemoryProductRepository implements ProductRepository {
         UUID id =  skuIndex.get(sku.getValue());
         if (id == null) return Optional.empty();
         return findById(id);
+    }
+
+    @Override
+    public List<Product> findAllActive() {
+        return store.values().stream()
+                .filter(Product::isActive)
+                .toList();
     }
 
     @Override
