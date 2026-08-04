@@ -3,7 +3,9 @@ package com.combat47.ecommerce.catalog.infrastructure.config;
 import com.combat47.ecommerce.catalog.application.port.in.*;
 import com.combat47.ecommerce.catalog.application.port.out.ProductRepository;
 import com.combat47.ecommerce.catalog.application.service.*;
-import com.combat47.ecommerce.catalog.infrastructure.persistence.inmemory.InMemoryProductRepository;
+import com.combat47.ecommerce.catalog.infrastructure.persistence.adapter.JpaProductRepositoryAdapter;
+import com.combat47.ecommerce.catalog.infrastructure.persistence.mapper.ProductEntityMapper;
+import com.combat47.ecommerce.catalog.infrastructure.persistence.repository.JpaProductRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
 public class CatalogConfiguration {
 
     @Bean
-    public ProductRepository productRepository() {
-        return new InMemoryProductRepository();
+    public ProductRepository productRepository(JpaProductRepository jpaProductRepository, ProductEntityMapper mapper) {
+        return new JpaProductRepositoryAdapter(jpaProductRepository, mapper);
     }
 
     @Bean
