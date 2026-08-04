@@ -1,4 +1,9 @@
 package com.combat47.ecommerce.catalog.application.command;
 
-public record RemoveFromCartCommand() {
+import java.util.UUID;
+
+public record RemoveFromCartCommand(
+        UUID userId,
+        UUID productId
+) {
 }
