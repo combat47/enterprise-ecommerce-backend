@@ -1,0 +1,6 @@
+package com.combat47.ecommerce.order.application.command;
+
+import java.util.UUID;
+
+public record GetOrderQuery(UUID orderId, UUID userId) {
+}
