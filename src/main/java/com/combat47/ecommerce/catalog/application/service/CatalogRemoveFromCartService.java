@@ -9,11 +9,11 @@ import com.combat47.ecommerce.catalog.domain.model.Cart;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RemoveFromCartService implements RemoveFromCartUseCase {
+public class CatalogRemoveFromCartService implements RemoveFromCartUseCase {
 
     private final CartRepository cartRepository;
 
-    public RemoveFromCartService(CartRepository cartRepository) {
+    public CatalogRemoveFromCartService(CartRepository cartRepository) {
         this.cartRepository = cartRepository;
     }
 

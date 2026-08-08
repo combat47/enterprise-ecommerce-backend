@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 
 
 @Service
-public class AddToCartService implements AddToCartUseCase {
+public class CatalogAddToCartService implements AddToCartUseCase {
 
 
     private final CartRepository cartRepository;
 
-    public AddToCartService(CartRepository cartRepository) {
+    public CatalogAddToCartService(CartRepository cartRepository) {
         this.cartRepository = cartRepository;
     }
 

@@ -4,7 +4,6 @@ import com.combat47.ecommerce.catalog.application.port.out.CartRepository;
 import com.combat47.ecommerce.catalog.domain.model.Cart;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 @Repository
-public class InMemoryCartRepository implements CartRepository {
+public class CatalogInMemoryCartRepository implements CartRepository {
 
     private final Map<UUID, Cart> store = new ConcurrentHashMap<>();
     private final Map<UUID, UUID> userToCart = new ConcurrentHashMap<>();

@@ -1,7 +1,7 @@
 package com.combat47.ecommerce.cart.domain.model;
 
+import com.combat47.ecommerce.cart.domain.exception.CartItemNotFoundException;
 import com.combat47.ecommerce.cart.domain.exception.InvalidQuantityException;
-import com.combat47.ecommerce.catalog.domain.exception.CartItemNotFoundException;
 import com.combat47.ecommerce.order.domain.model.Money;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ class CartTest {
     @Test
     void should_create_empty_cart() {
         assertThat(cart.getId()).isNotNull();
-        assertThat(cart.getCostumerId()).isEqualTo(CUSTOMER_ID);
+        assertThat(cart.getCustomerId()).isEqualTo(CUSTOMER_ID);
         assertThat(cart.getItems()).isEmpty();
         assertThat(cart.isEmpty()).isTrue();
         assertThat(cart.totalQuantity()).isZero();
@@ -50,8 +50,8 @@ class CartTest {
         assertThat(cart.totalQuantity()).isEqualTo(2);
         assertThat(cart.calculateTotalPrice()).isEqualTo(new Money(new BigDecimal("1999.98")));
         assertThat(cart.isEmpty()).isFalse();
-        assertThat(cart.getItems().get(0).getProductName()).isEqualTo(PRODUCT_NAME_1);
-        assertThat(cart.getItems().get(0).getQuantity()).isEqualTo(2);
+        assertThat(cart.getItems().getFirst().getProductName()).isEqualTo(PRODUCT_NAME_1);
+        assertThat(cart.getItems().getFirst().getQuantity()).isEqualTo(2);
     }
 
     @Test
@@ -69,7 +69,7 @@ class CartTest {
     void should_throw_when_adding_product_with_negative_quantity() {
         assertThatThrownBy(() -> cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, -1))
                 .isInstanceOf(InvalidQuantityException.class)
-                .hasMessage("Quantity must be positive");
+                .hasMessage("Quantity cannot be negative");
     }
 
     @Test
@@ -216,7 +216,7 @@ class CartTest {
         );
 
         assertThat(restored.getId()).isEqualTo(cartId);
-        assertThat(restored.getCostumerId()).isEqualTo(CUSTOMER_ID);
+        assertThat(restored.getCustomerId()).isEqualTo(CUSTOMER_ID);
         assertThat(restored.getItems()).isEmpty();
         assertThat(restored.getCreatedAt()).isEqualTo(now);
         assertThat(restored.getUpdatedAt()).isEqualTo(now);

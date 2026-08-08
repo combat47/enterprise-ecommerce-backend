@@ -21,13 +21,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class GetCartServiceTest {
+class GetProductServiceTest {
 
     @Mock
     private CartRepository cartRepository;
 
     @InjectMocks
-    private GetCartService getCartService;
+    private CatalogGetProductService getCartService;
 
     private static final UUID USER_ID = UUID.randomUUID();
 

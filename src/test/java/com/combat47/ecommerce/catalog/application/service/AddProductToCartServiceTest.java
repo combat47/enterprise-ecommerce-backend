@@ -22,13 +22,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AddToCartServiceTest {
+class AddProductToCartServiceTest {
 
     @Mock
     private CartRepository cartRepository;
 
     @InjectMocks
-    private AddToCartService addToCartService;
+    private CatalogAddToCartService addToCartService;
 
     private static final UUID USER_ID = UUID.randomUUID();
     private static final UUID PRODUCT_ID = UUID.randomUUID();

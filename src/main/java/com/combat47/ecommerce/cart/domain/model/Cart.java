@@ -1,27 +1,24 @@
 package com.combat47.ecommerce.cart.domain.model;
 
+import com.combat47.ecommerce.cart.domain.exception.CartItemNotFoundException;
 import com.combat47.ecommerce.cart.domain.exception.CartNotFoundException;
 import com.combat47.ecommerce.cart.domain.exception.InvalidQuantityException;
-import com.combat47.ecommerce.catalog.domain.exception.CartItemNotFoundException;
 import com.combat47.ecommerce.order.domain.model.Money;
 
 import java.time.Instant;
 import java.util.*;
 
-import static org.hibernate.validator.internal.util.Version.touch;
-
 public class Cart {
 
     private final UUID id;
-    private final UUID costumerId;
+    private final UUID customerId;
     private final List<CartItem> items;
     private final Instant createdAt;
     private Instant updatedAt;
 
-    public Cart(UUID id, UUID costumerId, List<CartItem> items,
-                Instant createdAt, Instant updatedAt) {
+    private Cart(UUID id, UUID customerId, List<CartItem> items, Instant createdAt, Instant updatedAt) {
         this.id = id;
-        this.costumerId = costumerId;
+        this.customerId = customerId;
         this.items = new ArrayList<>(items != null ? items : Collections.emptyList());
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -32,16 +29,16 @@ public class Cart {
         return new Cart(UUID.randomUUID(), customerId, new ArrayList<>(), now, now);
     }
 
-    public static Cart restore(UUID id,  UUID costumerId, List<CartItem> items,
+    public static Cart restore(UUID id, UUID customerId, List<CartItem> items,
                                Instant createdAt, Instant updatedAt) {
-        return new Cart(id, costumerId, items, createdAt, updatedAt);
+        return new Cart(id, customerId, items, createdAt, updatedAt);
     }
 
-    // Business Methods
+    // ===== Business Methods =====
 
     public void addProduct(UUID productId, String productName, Money unitPrice, int quantity) {
         if (quantity < 0) {
-            throw new InvalidQuantityException("Quantity must be positive");
+            throw new InvalidQuantityException("Quantity cannot be negative");
         }
         if (quantity == 0) {
             throw new InvalidQuantityException("Quantity must be greater than zero");
@@ -50,19 +47,18 @@ public class Cart {
         for (CartItem item : items) {
             if (item.getProductId().equals(productId)) {
                 item.increase(quantity);
-                this.updatedAt = Instant.now();
+                touch();
                 return;
             }
         }
 
         CartItem newItem = CartItem.create(productId, productName, unitPrice, quantity);
         items.add(newItem);
-        this.updatedAt = Instant.now();
+        touch();
     }
 
     public void removeProduct(UUID productId) {
         boolean removed = items.removeIf(item -> item.getProductId().equals(productId));
-
         if (!removed) {
             throw new CartItemNotFoundException("Product not found in cart: " + productId);
         }
@@ -93,7 +89,7 @@ public class Cart {
             return;
         }
         items.clear();
-        this.updatedAt = Instant.now();
+        touch();
     }
 
     public Money calculateTotalPrice() {
@@ -114,16 +110,22 @@ public class Cart {
         return items.stream().mapToInt(CartItem::getQuantity).sum();
     }
 
+    private void touch() {
+        this.updatedAt = Instant.now();
+    }
+
+    // getters
+
     public UUID getId() {
         return id;
     }
 
-    public UUID getCostumerId() {
-        return costumerId;
+    public UUID getCustomerId() {
+        return customerId;
     }
 
     public List<CartItem> getItems() {
-        return items;
+        return Collections.unmodifiableList(items);
     }
 
     public Instant getCreatedAt() {
