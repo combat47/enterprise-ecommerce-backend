@@ -1,5 +1,6 @@
 package com.combat47.ecommerce.order.application.service;
 
+import com.combat47.ecommerce.cart.domain.exception.InsufficientStockException;
 import com.combat47.ecommerce.order.application.command.PlaceOrderCommand;
 import com.combat47.ecommerce.order.application.model.OrderResponse;
 import com.combat47.ecommerce.order.application.port.in.PlaceOrderUseCase;
@@ -28,7 +29,7 @@ public class PlaceOrderService implements PlaceOrderUseCase {
     public OrderResponse placeOrder(PlaceOrderCommand command) {
         for (PlaceOrderCommand.OrderItemCommand item : command.items()) {
             if (!inventoryPort.hasEnoughStock(item.productId(), item.quantity())) {
-                throw new IllegalArgumentException("Insufficient stock for product: " + item.productId());
+                throw new InsufficientStockException("Insufficient stock for product: " + item.productId());
             }
         }
 

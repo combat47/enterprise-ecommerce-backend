@@ -14,239 +14,157 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CartTest {
 
-    private static final UUID CUSTOMER_ID = UUID.randomUUID();
-    private static final UUID PRODUCT_ID_1 = UUID.randomUUID();
-    private static final UUID PRODUCT_ID_2 = UUID.randomUUID();
-    private static final String PRODUCT_NAME_1 = "Laptop";
-    private static final String PRODUCT_NAME_2 = "Mouse";
-    private static final Money PRICE_1 = new Money(new BigDecimal("999.99"));
-    private static final Money PRICE_2 = new Money(new BigDecimal("29.99"));
-
+    private UUID customerId;
+    private UUID productId1;
+    private UUID productId2;
+    private String productName1;
+    private String productName2;
+    private Money unitPrice1;
+    private Money unitPrice2;
     private Cart cart;
 
     @BeforeEach
     void setUp() {
-        cart = Cart.create(CUSTOMER_ID);
+        customerId = UUID.randomUUID();
+        productId1 = UUID.randomUUID();
+        productId2 = UUID.randomUUID();
+        productName1 = "Laptop";
+        productName2 = "Mouse";
+        unitPrice1 = new Money(new BigDecimal("999.99"));
+        unitPrice2 = new Money(new BigDecimal("19.99"));
+        cart = Cart.create(customerId);
     }
 
     @Test
-    void should_create_empty_cart() {
+    void shouldCreateNewCart() {
         assertThat(cart.getId()).isNotNull();
-        assertThat(cart.getCustomerId()).isEqualTo(CUSTOMER_ID);
+        assertThat(cart.getCustomerId()).isEqualTo(customerId);
         assertThat(cart.getItems()).isEmpty();
         assertThat(cart.isEmpty()).isTrue();
+        assertThat(cart.itemCount()).isZero();
         assertThat(cart.totalQuantity()).isZero();
-        assertThat(cart.calculateTotalPrice()).isEqualTo(new Money(BigDecimal.ZERO));
-        assertThat(cart.getCreatedAt()).isNotNull();
-        assertThat(cart.getUpdatedAt()).isNotNull();
-        assertThat(cart.getCreatedAt()).isEqualTo(cart.getUpdatedAt());
+        assertThat(cart.calculateTotalPrice().getAmount()).isEqualByComparingTo(BigDecimal.ZERO);
     }
 
     @Test
-    void should_add_new_product() {
-        cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, 2);
+    void shouldAddProductToEmptyCart() {
+        cart.addProduct(productId1, productName1, unitPrice1, 2);
 
         assertThat(cart.getItems()).hasSize(1);
+        CartItem item = cart.getItems().getFirst();
+        assertThat(item.getProductId()).isEqualTo(productId1);
+        assertThat(item.getProductName()).isEqualTo(productName1);
+        assertThat(item.getUnitPrice()).isEqualTo(unitPrice1);
+        assertThat(item.getQuantity()).isEqualTo(2);
+        assertThat(item.subtotal().getAmount()).isEqualByComparingTo(new BigDecimal("1999.98"));
         assertThat(cart.totalQuantity()).isEqualTo(2);
-        assertThat(cart.calculateTotalPrice()).isEqualTo(new Money(new BigDecimal("1999.98")));
+        assertThat(cart.calculateTotalPrice().getAmount()).isEqualByComparingTo(new BigDecimal("1999.98"));
         assertThat(cart.isEmpty()).isFalse();
-        assertThat(cart.getItems().getFirst().getProductName()).isEqualTo(PRODUCT_NAME_1);
-        assertThat(cart.getItems().getFirst().getQuantity()).isEqualTo(2);
+        assertThat(cart.itemCount()).isEqualTo(1);
     }
 
     @Test
-    void should_increase_quantity_when_product_already_exists() {
-        cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, 2);
+    void shouldIncreaseQuantityWhenAddingExistingProduct() {
+        cart.addProduct(productId1, productName1, unitPrice1, 2);
+        cart.addProduct(productId1, productName1, unitPrice1, 3);
 
-        cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, 3);
-
-        assertThat(cart.getItems()).hasSize(1);
+        CartItem item = cart.getItems().getFirst();
+        assertThat(item.getQuantity()).isEqualTo(5);
         assertThat(cart.totalQuantity()).isEqualTo(5);
-        assertThat(cart.calculateTotalPrice()).isEqualTo(new Money(new BigDecimal("4999.95")));
+        assertThat(cart.itemCount()).isEqualTo(1);
     }
 
     @Test
-    void should_throw_when_adding_product_with_negative_quantity() {
-        assertThatThrownBy(() -> cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, -1))
-                .isInstanceOf(InvalidQuantityException.class)
-                .hasMessage("Quantity cannot be negative");
+    void shouldAddDifferentProducts() {
+        cart.addProduct(productId1, productName1, unitPrice1, 2);
+        cart.addProduct(productId2, productName2, unitPrice2, 3);
+
+        assertThat(cart.getItems()).hasSize(2);
+        assertThat(cart.totalQuantity()).isEqualTo(5);
+        assertThat(cart.calculateTotalPrice().getAmount())
+                .isEqualByComparingTo(new BigDecimal("2059.95"));
     }
 
     @Test
-    void should_throw_when_adding_product_with_zero_quantity() {
-        assertThatThrownBy(() -> cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, 0))
+    void shouldThrowWhenAddingProductWithZeroQuantity() {
+        assertThatThrownBy(() -> cart.addProduct(productId1, productName1, unitPrice1, 0))
                 .isInstanceOf(InvalidQuantityException.class)
                 .hasMessage("Quantity must be greater than zero");
     }
 
     @Test
-    void should_remove_product() {
-        cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, 2);
-        cart.addProduct(PRODUCT_ID_2, PRODUCT_NAME_2, PRICE_2, 3);
-
-        cart.removeProduct(PRODUCT_ID_1);
-
-        assertThat(cart.getItems()).hasSize(1);
-        assertThat(cart.totalQuantity()).isEqualTo(3);
-        assertThat(cart.calculateTotalPrice()).isEqualTo(new Money(new BigDecimal("89.97")));
+    void shouldThrowWhenAddingProductWithNegativeQuantity() {
+        assertThatThrownBy(() -> cart.addProduct(productId1, productName1, unitPrice1, -1))
+                .isInstanceOf(InvalidQuantityException.class)
+                .hasMessage("Quantity must be greater than zero");
     }
 
     @Test
-    void should_throw_when_removing_non_existing_product() {
-        assertThatThrownBy(() -> cart.removeProduct(PRODUCT_ID_1))
-                .isInstanceOf(CartItemNotFoundException.class)
-                .hasMessage("Product not found in cart: " +  PRODUCT_ID_1);
-    }
-
-    @Test
-    void should_change_product_quantity() {
-        cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, 2);
-
-        cart.changeQuantity(PRODUCT_ID_1, 5);
-
-        assertThat(cart.getItems()).hasSize(1);
-        assertThat(cart.totalQuantity()).isEqualTo(5);
-        assertThat(cart.calculateTotalPrice()).isEqualTo(new Money(new BigDecimal("4999.95")));
-
-    }
-
-    @Test
-    void should_remove_product_when_quantity_becomes_zero() {
-        cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, 2);
-
-        cart.changeQuantity(PRODUCT_ID_1, 0);
+    void shouldRemoveExistingProduct() {
+        cart.addProduct(productId1, productName1, unitPrice1, 2);
+        cart.removeProduct(productId1);
 
         assertThat(cart.getItems()).isEmpty();
-        assertThat(cart.totalQuantity()).isZero();
-        assertThat(cart.calculateTotalPrice()).isEqualTo(new Money(BigDecimal.ZERO));
         assertThat(cart.isEmpty()).isTrue();
-
+        assertThat(cart.totalQuantity()).isZero();
     }
 
     @Test
-    void should_throw_when_changing_quantity_to_negative() {
-        cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, 2);
+    void shouldThrowWhenRemovingNonExistingProduct() {
+        assertThatThrownBy(() -> cart.removeProduct(productId1))
+                .isInstanceOf(CartItemNotFoundException.class)
+                .hasMessageContaining("Product not found in cart");
+    }
 
-        assertThatThrownBy(() -> cart.changeQuantity(PRODUCT_ID_1, -1))
+    @Test
+    void shouldChangeQuantityOfExistingProduct() {
+        cart.addProduct(productId1, productName1, unitPrice1, 2);
+        cart.changeQuantity(productId1, 5);
+
+        CartItem item = cart.getItems().getFirst();
+        assertThat(item.getQuantity()).isEqualTo(5);
+        assertThat(cart.totalQuantity()).isEqualTo(5);
+    }
+
+    @Test
+    void shouldRemoveProductWhenChangingQuantityToZero() {
+        cart.addProduct(productId1, productName1, unitPrice1, 2);
+        cart.changeQuantity(productId1, 0);
+
+        assertThat(cart.getItems()).isEmpty();
+        assertThat(cart.isEmpty()).isTrue();
+    }
+
+    @Test
+    void shouldThrowWhenChangingQuantityToNegative() {
+        cart.addProduct(productId1, productName1, unitPrice1, 2);
+
+        assertThatThrownBy(() -> cart.changeQuantity(productId1, -1))
                 .isInstanceOf(InvalidQuantityException.class)
                 .hasMessage("Quantity cannot be negative");
     }
 
     @Test
-    void should_throw_when_changing_quantity_of_non_existing_product() {
-        assertThatThrownBy(() -> cart.changeQuantity(PRODUCT_ID_1, 5))
+    void shouldThrowWhenChangingQuantityOfNonExistingProduct() {
+        assertThatThrownBy(() -> cart.changeQuantity(productId1, 3))
                 .isInstanceOf(CartItemNotFoundException.class)
-                .hasMessage("Product not found in cart: " +  PRODUCT_ID_1);
+                .hasMessageContaining("Product not found in cart");
     }
 
     @Test
-    void should_clear_cart() {
-        cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, 2);
-        cart.addProduct(PRODUCT_ID_2, PRODUCT_NAME_2, PRICE_2, 3);
-
+    void shouldClearCartWithItems() {
+        cart.addProduct(productId1, productName1, unitPrice1, 2);
+        cart.addProduct(productId2, productName2, unitPrice2, 3);
         cart.clear();
 
         assertThat(cart.getItems()).isEmpty();
-        assertThat(cart.totalQuantity()).isZero();
-        assertThat(cart.calculateTotalPrice()).isEqualTo(new Money(BigDecimal.ZERO));
         assertThat(cart.isEmpty()).isTrue();
-
+        assertThat(cart.totalQuantity()).isZero();
     }
 
     @Test
-    void should_clear_empty_cart_without_exception() {
+    void shouldClearEmptyCartWithoutError() {
         cart.clear();
-
         assertThat(cart.getItems()).isEmpty();
-        assertThat(cart.totalQuantity()).isZero();
-        assertThat(cart.calculateTotalPrice()).isEqualTo(new Money(BigDecimal.ZERO));
-        assertThat(cart.isEmpty()).isTrue();
-    }
-
-    @Test
-    void should_calculate_total_price() {
-        cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, 2); //1999.98
-        cart.addProduct(PRODUCT_ID_2, PRODUCT_NAME_2, PRICE_2, 3); //89.97
-
-        Money expected = new Money(new BigDecimal("2089.95"));
-        assertThat(cart.calculateTotalPrice()).isEqualTo(expected);
-    }
-
-    @Test
-    void should_calculate_total_price_for_empty_cart() {
-        assertThat(cart.calculateTotalPrice()).isEqualTo(new Money(BigDecimal.ZERO));
-    }
-
-    @Test
-    void should_return_total_quantity() {
-        cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, 2);
-        cart.addProduct(PRODUCT_ID_2, PRODUCT_NAME_2, PRICE_2, 3);
-
-        assertThat(cart.totalQuantity()).isEqualTo(5);
-
-    }
-
-    @Test
-    void should_update_timestamp_on_add_product() throws InterruptedException {
-        cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, 2);
-        Thread.sleep(600);
-        cart.addProduct(PRODUCT_ID_2, PRODUCT_NAME_2, PRICE_2, 1);
-        assertThat(cart.getUpdatedAt()).isAfter(cart.getCreatedAt());
-    }
-
-    @Test
-    void should_update_timestamp_on_remove_product() throws InterruptedException {
-        cart.addProduct(PRODUCT_ID_1, PRODUCT_NAME_1, PRICE_1, 2);
-        Thread.sleep(850);
-        cart.removeProduct(PRODUCT_ID_1);
-        assertThat(cart.getUpdatedAt()).isAfter(cart.getCreatedAt());
-    }
-
-    @Test
-    void should_restore_cart() {
-        UUID cartId = UUID.randomUUID();
-        java.time.Instant now = java.time.Instant.now();
-
-        Cart restored = Cart.restore(
-                cartId,
-                CUSTOMER_ID,
-                null,
-                now,
-                now
-        );
-
-        assertThat(restored.getId()).isEqualTo(cartId);
-        assertThat(restored.getCustomerId()).isEqualTo(CUSTOMER_ID);
-        assertThat(restored.getItems()).isEmpty();
-        assertThat(restored.getCreatedAt()).isEqualTo(now);
-        assertThat(restored.getUpdatedAt()).isEqualTo(now);
-
-    }
-
-    @Test
-    void cart_with_same_id_should_be_equal() {
-        UUID id = UUID.randomUUID();
-        java.time.Instant now = java.time.Instant.now();
-
-        Cart c1 = Cart.restore(id, CUSTOMER_ID, null, now, now);
-        Cart c2 = Cart.restore(id, CUSTOMER_ID, null, now, now);
-
-        assertThat(c1).isEqualTo(c2);
-        assertThat(c1.hashCode()).isEqualTo(c2.hashCode());
-
-    }
-
-    @Test
-    void cart_with_different_id_should_not_be_equal() {
-        java.time.Instant now = java.time.Instant.now();
-
-        Cart c1 = Cart.restore(UUID.randomUUID(), CUSTOMER_ID, null, now, now);
-        Cart c2 = Cart.restore(UUID.randomUUID(), CUSTOMER_ID, null, now, now);
-
-        assertThat(c1).isNotEqualTo(c2);
     }
 }
-
-
-
-

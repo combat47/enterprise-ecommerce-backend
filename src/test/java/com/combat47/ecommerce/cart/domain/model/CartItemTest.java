@@ -44,7 +44,7 @@ class CartItemTest {
     void should_increase_quantity() {
         CartItem item = CartItem.create(PRODUCT_ID, PRODUCT_NAME, PRICE, 2);
 
-        item.increase();
+        item.increase(1);
 
         assertThat(item.getQuantity()).isEqualTo(3);
     }
@@ -102,7 +102,7 @@ class CartItemTest {
 
         assertThatThrownBy(() ->  item.changeQuantity(-1))
                 .isInstanceOf(InvalidQuantityException.class)
-                .hasMessage("Quantity cannot be negative");
+                .hasMessage("Quantity must be greater than zero");
     }
 
     @Test

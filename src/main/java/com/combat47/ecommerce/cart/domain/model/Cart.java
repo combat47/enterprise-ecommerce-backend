@@ -1,7 +1,6 @@
 package com.combat47.ecommerce.cart.domain.model;
 
 import com.combat47.ecommerce.cart.domain.exception.CartItemNotFoundException;
-import com.combat47.ecommerce.cart.domain.exception.CartNotFoundException;
 import com.combat47.ecommerce.cart.domain.exception.InvalidQuantityException;
 import com.combat47.ecommerce.order.domain.model.Money;
 
@@ -37,10 +36,7 @@ public class Cart {
     // ===== Business Methods =====
 
     public void addProduct(UUID productId, String productName, Money unitPrice, int quantity) {
-        if (quantity < 0) {
-            throw new InvalidQuantityException("Quantity cannot be negative");
-        }
-        if (quantity == 0) {
+        if (quantity <= 0) {
             throw new InvalidQuantityException("Quantity must be greater than zero");
         }
 
@@ -70,15 +66,15 @@ public class Cart {
             throw new InvalidQuantityException("Quantity cannot be negative");
         }
 
-        CartItem item = items.stream()
-                .filter(i -> i.getProductId().equals(productId))
-                .findFirst()
-                .orElseThrow(() -> new CartItemNotFoundException("Product not found in cart: " + productId));
-
         if (newQuantity == 0) {
             removeProduct(productId);
             return;
         }
+
+        CartItem item = items.stream()
+                .filter(i -> i.getProductId().equals(productId))
+                .findFirst()
+                .orElseThrow(() -> new CartItemNotFoundException("Product not found in cart: " + productId));
 
         item.changeQuantity(newQuantity);
         touch();
@@ -114,7 +110,7 @@ public class Cart {
         this.updatedAt = Instant.now();
     }
 
-    // getters
+    // ===== Getters =====
 
     public UUID getId() {
         return id;

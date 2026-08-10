@@ -14,7 +14,7 @@ public class CartItem {
     private final Money unitPrice;
     private int quantity;
 
-    public CartItem(UUID id, UUID productId, String productName, Money unitPrice, int quantity) {
+    private CartItem(UUID id, UUID productId, String productName, Money unitPrice, int quantity) {
         this.id = id;
         this.productId = productId;
         this.productName = productName;
@@ -23,8 +23,8 @@ public class CartItem {
     }
 
     public static CartItem create(UUID productId, String productName, Money unitPrice, int quantity) {
-        if (quantity < 0) {
-            throw new IllegalArgumentException("Quantity must be positive");
+        if (quantity <= 0) {
+            throw new InvalidQuantityException("Quantity must be greater than zero");
         }
         return new CartItem(UUID.randomUUID(), productId, productName, unitPrice, quantity);
     }
@@ -33,11 +33,7 @@ public class CartItem {
         return new CartItem(id, productId, productName, unitPrice, quantity);
     }
 
-    //Business Methods
-
-    public void increase() {
-        this.quantity++;
-    }
+    // ===== Business Methods =====
 
     public void increase(int amount) {
         if (amount <= 0) {
@@ -54,25 +50,17 @@ public class CartItem {
     }
 
     public void changeQuantity(int newQuantity) {
-        if (newQuantity < 0) {
-            throw new InvalidQuantityException("Quantity cannot be negative");
-        }
-        this.quantity = newQuantity;
-    }
-
-    private static void validationQuantity(int quantity) {
-        if (quantity < 0) {
-            throw new InvalidQuantityException("Quantity cannot be negative");
-        }
-        if (quantity == 0) {
+        if (newQuantity <= 0) {
             throw new InvalidQuantityException("Quantity must be greater than zero");
         }
-
+        this.quantity = newQuantity;
     }
 
     public Money subtotal() {
         return unitPrice.multiply(quantity);
     }
+
+    // ===== Getters =====
 
     public UUID getId() {
         return id;
@@ -99,7 +87,6 @@ public class CartItem {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CartItem cartItem = (CartItem) o;
-
         return Objects.equals(id, cartItem.id);
     }
 
@@ -115,6 +102,6 @@ public class CartItem {
                 ", productId=" + productId +
                 ", productName='" + productName + '\'' +
                 ", quantity=" + quantity +
-                "}";
+                '}';
     }
 }
